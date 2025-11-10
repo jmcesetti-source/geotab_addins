@@ -1,34 +1,47 @@
-button.onclick = async function () {
-    try {
-        const result = await api.call("Get", {
-            typeName: "Trip",
-            resultsLimit: 100,
-            search: {
-                fromDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-                toDate: new Date().toISOString()
-            }
-        });
-        const trips = result || [];
-        if (!trips.length) {
-            alert("No trips found.");
-            return;
-        }
+geotab.addin.tripExporter = function (api, state) {
+    return {
+        initialize: function (api, state, callback) {
+            callback();
+        },
 
-        const data = trips.map(t => ({
-            Vehicle: t.device?.name || "",
-            Driver: t.driver?.name || "",
-            Start: new Date(t.start).toLocaleString(),
-            End: new Date(t.stop).toLocaleString(),
-            DurationMinutes: Math.round((new Date(t.stop) - new Date(t.start)) / 60000),
-            DistanceKm: (t.distance / 1000).toFixed(2)
-        }));
+        focus: function (api, state) {
+            const button = document.getElementById("addinButton_tripExporter");
+            if (!button) return;
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Trips");
-        XLSX.writeFile(wb, "trip_history.xlsx");
-    } catch (err) {
-        console.error(err);
-        alert("Error exporting trips.");
-    }
+            button.onclick = async function () {
+                try {
+                    // Obtenemos los viajes seleccionados
+                    const trips = state?.data || [];
+                    if (!trips.length) {
+                        alert("No hay viajes seleccionados.");
+                        return;
+                    }
+
+                    // Para este ejemplo tomamos solo el primero
+                    const trip = trips[0];
+                    const start = new Date(trip.start).toLocaleString();
+                    const end = new Date(trip.stop).toLocaleString();
+
+                    // Texto a guardar
+                    const content = `Inicio del viaje: ${start}\nFin del viaje: ${end}`;
+
+                    // Crear blob y forzar descarga
+                    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "trip_info.txt";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error(err);
+                    alert("Error al obtener el viaje seleccionado.");
+                }
+            };
+        },
+
+        blur: function () {}
+    };
 };
