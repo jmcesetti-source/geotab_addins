@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Exportar Viaje como KML</title>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://unpkg.com/tokml/tokml.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, button {
+      margin-top: 5px;
+      padding: 5px;
+    }
+    #log {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exportar viaje a KML</h2>
+
+  <label>Dispositivo:</label>
+  <select id="deviceSelect"></select>
+
+  <label>Fecha inicio:</label>
+  <input type="datetime-local" id="fromDate">
+
+  <label>Fecha fin:</label>
+  <input type="datetime-local" id="toDate">
+
+  <label>Nombre de archivo:</label>
+  <input type="text" id="filename" value="TRAZA">
+
+  <button id="generate">Generar KML</button>
+
+  <pre id="log"></pre>
+
+  <script>
+    (function() {
+      var api = null;
+      var state = null;
+      var logBox = document.getElementById('log');
+
+      function log(msg) {
+        logBox.textContent += msg + '\n';
+      }
+
+      function loadDevices() {
+        log('📡 Cargando dispositivos...');
+        api.call("Get", { typeName: "Device" }, function(result) {
+          var select = document.getElementById("deviceSelect");
+          select.innerHTML = "";
+          for (var i = 0; i < result.length; i++) {
+            var opt = document.createElement("option");
+            opt.value = result[i].id;
+            opt.textContent = result[i].name;
+            select.appendChild(opt);
+          }
+          log("✅ Dispositivos cargados: " + result.length);
+        }, function(err) {
+          log("❌ Error al cargar dispositivos: " + err);
+        });
+      }
+
+      function getLogRecords(deviceId, fromDate, toDate, callback) {
+        log("⏳ Obteniendo registros...");
+        api.call("Get", {
+          typeName: "LogRecord",
+          search: {
+            deviceSearch: { id: deviceId },
+            fromDate: fromDate,
+            toDate: toDate
+          }
+        }, function(logs) {
+          var coords = [];
+          for (var i = 0; i < logs.length; i++) {
+            var l = logs[i];
+            if (l.latitude && l.longitude) {
+              coords.push([l.longitude, l.latitude]);
+            }
+          }
+          log("📍 Registros obtenidos: " + coords.length);
+          callback(coords);
+        }, function(err) {
+          log("❌ Error al obtener logs: " + err);
+          callback([]);
+        });
+      }
+
+      function createKML(coords, name) {
+        if (coords.length < 2) {
+          log("⚠️ No hay suficientes puntos para generar línea.");
+          return;
+        }
+
+        try {
+          var line = turf.lineString(coords);
+          var buffer = turf.buffer(line, 10, { units: 'meters' });
+          var kml = tokml(buffer);
+          var blob = new Blob([kml], { type: "application/vnd.google-earth.kml+xml" });
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = (name || "Traza") + ".kml";
+          a.click();
+          log("✅ Archivo KML generado.");
+        } catch (e) {
+          log("❌ Error al generar KML: " + e);
+        }
+      }
+
+      document.getElementById("generate").addEventListener("click", function() {
+        var deviceId = document.getElementById("deviceSelect").value;
+        var from = new Date(document.getElementById("fromDate").value).toISOString();
+        var to = new Date(document.getElementById("toDate").value).toISOString();
+        var filename = document.getElementById("filename").value;
+
+        if (!deviceId) {
+          log("⚠️ Seleccioná un dispositivo.");
+          return;
+        }
+
+        getLogRecords(deviceId, from, to, function(coords) {
+          createKML(coords, filename);
+        });
+      });
+
+      // Inicializador del Add-in
+      geotab.addin.exportKML = function(api_, state_) {
+        api = api_;
+        state = state_;
+
+        return {
+          initialize: function(api, state, callback) {
+            log("🚀 Add-in inicializado");
+            loadDevices();
+            callback();
+          },
+          focus: function(api, state){},
+          blur: function() {}
+        };
+      };
+    })();
+  </script>
+</body>
+</html>
