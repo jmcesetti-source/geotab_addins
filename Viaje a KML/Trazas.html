@@ -13,24 +13,26 @@
   <script src="https://unpkg.com/tokml/tokml.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h2>Exportar viaje a KML</h2>
-
-    <label>Dispositivo:</label>
-    <select id="deviceSelect"></select>
-
-    <label>Fecha inicio:</label>
-    <input type="datetime-local" id="fromDate">
-
-    <label>Fecha fin:</label>
-    <input type="datetime-local" id="toDate">
-
-    <label>Nombre de archivo:</label>
-    <input type="text" id="filename" value="Viaje_a_KML">
-
-    <button id="generate">Generar KML</button>
-
-    <pre id="log"></pre>
+  <div id="exportKML">
+    <div class="container">
+      <h2>Exportar viaje a KML</h2>
+  
+      <label>Dispositivo:</label>
+      <select id="deviceSelect"></select>
+  
+      <label>Fecha inicio:</label>
+      <input type="datetime-local" id="fromDate">
+  
+      <label>Fecha fin:</label>
+      <input type="datetime-local" id="toDate">
+  
+      <label>Nombre de archivo:</label>
+      <input type="text" id="filename" value="Viaje_a_KML">
+  
+      <button id="generate">Generar KML</button>
+  
+      <pre id="log"></pre>
+    </div>
   </div>
 
   <script>
@@ -141,4 +143,5 @@
   </script>
 </body>
 </html>
+
 
