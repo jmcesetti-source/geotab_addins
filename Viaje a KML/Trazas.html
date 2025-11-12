@@ -9,144 +9,30 @@
   <script src="https://unpkg.com/tokml/tokml.js"></script>
 </head>
 <body>
-  <div id="exportKML">
-    <div class="container">
-      <h2>Exportar viaje a KML</h2>
-  
-      <label>Dispositivo:</label>
-      <select id="deviceSelect"></select>
-  
-      <label>Fecha inicio:</label>
-      <input type="datetime-local" id="fromDate">
-  
-      <label>Fecha fin:</label>
-      <input type="datetime-local" id="toDate">
-  
-      <label>Nombre de archivo:</label>
-      <input type="text" id="filename" value="Viaje_a_KML">
-  
-      <button id="generate">Generar KML</button>
-  
-      <pre id="log"></pre>
+  <div id="exportKML" style="font-family:'Segoe UI',Roboto,Arial,sans-serif; color:#333; background:transparent; display:flex; justify-content:center; align-items:flex-start; padding:20px;">
+    <div style="background:#fff; padding:30px 40px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.1); width:100%; max-width:500px;">
+      <h2 style="text-align:center; color:#1a73e8; margin-bottom:25px; font-weight:600;">Exportar viaje a KML</h2>
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Dispositivo:</label>
+      <select id="deviceSelect" style="width:100%; padding:10px; margin-top:6px; border:1px solid #d0d7de; border-radius:8px; font-size:15px;"></select>
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Fecha inicio:</label>
+      <input type="datetime-local" id="fromDate" style="width:100%; padding:10px; margin-top:6px; border:1px solid #d0d7de; border-radius:8px; font-size:15px;">
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Fecha fin:</label>
+      <input type="datetime-local" id="toDate" style="width:100%; padding:10px; margin-top:6px; border:1px solid #d0d7de; border-radius:8px; font-size:15px;">
+
+      <label style="display:block; margin-top:15px; font-weight:500;">Nombre de archivo:</label>
+      <input type="text" id="filename" value="Viaje_a_KML" style="width:100%; padding:10px; margin-top:6px; border:1px solid #d0d7de; border-radius:8px; font-size:15px;">
+
+      <button id="generate" style="width:100%; margin-top:25px; background:#1a73e8; color:white; padding:12px; border:none; border-radius:8px; font-size:16px; cursor:pointer;">Generar KML</button>
+
+      <pre id="log" style="margin-top:25px; background:#f9fafc; border:1px solid #e0e0e0; border-radius:10px; padding:15px; font-family:'Courier New',monospace; font-size:13px; color:#333; white-space:pre-wrap; max-height:250px; overflow-y:auto; line-height:1.5;"></pre>
     </div>
   </div>
 
   <script>
     (function() {
-      // === Inyectar estilos solo dentro del add-in ===
-      const container = document.getElementById("exportKML");
-      const style = document.createElement("style");
-      style.textContent = `
-        #exportKML {
-          font-family: "Segoe UI", Roboto, Arial, sans-serif;
-          background: transparent;
-          color: #333;
-          display: flex;
-          justify-content: center;
-          align-items: flex-start;
-          padding: 20px;
-        }
-
-        #exportKML .container {
-          background: #fff;
-          padding: 30px 40px;
-          border-radius: 16px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-          width: 100%;
-          max-width: 500px;
-        }
-
-        #exportKML h2 {
-          text-align: center;
-          color: #1a73e8;
-          margin-bottom: 25px;
-          font-weight: 600;
-        }
-
-        #exportKML label {
-          display: block;
-          margin-top: 15px;
-          font-weight: 500;
-        }
-
-        #exportKML input,
-        #exportKML select {
-          width: 100%;
-          padding: 10px;
-          margin-top: 6px;
-          border: 1px solid #d0d7de;
-          border-radius: 8px;
-          font-size: 15px;
-          transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        #exportKML input:focus,
-        #exportKML select:focus {
-          outline: none;
-          border-color: #1a73e8;
-          box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.2);
-        }
-
-        #exportKML button {
-          width: 100%;
-          margin-top: 25px;
-          background: #1a73e8;
-          color: white;
-          padding: 12px;
-          border: none;
-          border-radius: 8px;
-          font-size: 16px;
-          cursor: pointer;
-          transition: background 0.25s, transform 0.1s;
-        }
-
-        #exportKML button:hover {
-          background: #155fc4;
-        }
-
-        #exportKML button:active {
-          transform: scale(0.98);
-        }
-
-        #exportKML #log {
-          margin-top: 25px;
-          background: #f9fafc;
-          border: 1px solid #e0e0e0;
-          border-radius: 10px;
-          padding: 15px;
-          font-family: "Courier New", monospace;
-          font-size: 13px;
-          color: #333;
-          white-space: pre-wrap;
-          max-height: 250px;
-          overflow-y: auto;
-          line-height: 1.5;
-        }
-
-        #exportKML #log::-webkit-scrollbar {
-          width: 8px;
-        }
-        #exportKML #log::-webkit-scrollbar-thumb {
-          background-color: #c0c0c0;
-          border-radius: 10px;
-        }
-        #exportKML #log::-webkit-scrollbar-thumb:hover {
-          background-color: #999;
-        }
-
-        @media (max-width: 600px) {
-          #exportKML .container {
-            margin: 10px;
-            padding: 20px;
-          }
-          #exportKML h2 {
-            font-size: 20px;
-          }
-        }
-      `;
-      container.prepend(style);
-
-      // === Código funcional del Add-in ===
       var api = null;
       var state = null;
       var logBox = document.getElementById('log');
