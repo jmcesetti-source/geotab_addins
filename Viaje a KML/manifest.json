@@ -1,0 +1,14 @@
+{
+    "name": "Viajes a KML",
+    "supportEmail": "jm@cesetti.com.ar",
+    "version": "1.0",
+    "items": [
+        {
+            "url": "https://raw.githubusercontent.com/jmcesetti/geotabaddins/refs/heads/main/Viaje%20a%20KML/Trazas.html",
+            "path": "tripsHistory/",
+            "menuName": "Viajes a KML",
+            "icon": "https://raw.githubusercontent.com/feathericons/feather/master/icons/download.svg"
+        }
+    ],
+    "isSigned": false
+}
