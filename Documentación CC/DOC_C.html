@@ -1,213 +1,470 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Documentos</title>
+    <meta charset="UTF-8" />
+    <title>Documentación de Conductores</title>
     <style>
         body {
-            font-family: Arial;
-            padding: 20px;
+            font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+            color: #333;
+            background: transparent;
             display: flex;
-            gap: 40px;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            box-sizing: border-box;
         }
-        #left, #right {
-            width: 45%;
+        .card {
+            background: #fff;
+            padding: 24px;
+            border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(17, 24, 39, 0.06);
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
         }
-        h2 {
-            margin-top: 0;
+        .title {
+            text-align: center;
+            color: #1a73e8;
+            font-weight: 600;
+            margin: 0 0 18px 0;
+            font-size: 20px;
         }
-        .inputBox {
-            margin-bottom: 15px;
+        .layout {
+            display: flex;
+            gap: 20px;
+        }
+        .panel {
+            padding: 16px;
+            box-sizing: border-box;
+            border-radius: 10px;
+            background: #fbfcfe;
+        }
+        #leftPanel {
+            flex: 1;
+            min-width: 380px;
+            max-height: 640px;
+            overflow-y: auto;
+            border: 1px solid #e6eefc;
+        }
+        #rightPanel {
+            width: 420px;
+            border: 1px solid #e6eefc;
+        }
+        .sectionTitle {
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #0f172a;
         }
         label {
             display: block;
-            margin-bottom: 4px;
+            margin-top: 10px;
+            font-weight: 500;
+            font-size: 14px;
         }
-        input[type=text], input[type=date], select {
-            width: 260px;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+        select, input[type="text"], input[type="date"], input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: #fff;
         }
         button {
-            padding: 10px 18px;
-            background: #0078ff;
-            color: #fff;
+            width: 100%;
+            margin-top: 14px;
+            background: #1a73e8;
+            color: white;
+            padding: 12px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 15px;
             cursor: pointer;
         }
-        #list {
-            border: 1px solid #ccc;
-            padding: 10px;
+        .docGroup {
+            padding: 12px;
+            border-bottom: 1px dashed #e6eefc;
+        }
+        .docGroupHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+        .docUser {
+            font-weight: 700;
+            color: #0f172a;
+        }
+        .docList {
+            margin-top: 8px;
+        }
+        .docItem {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid #eef3ff;
+            background: #fff;
+        }
+        .docMeta {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 60%;
+            font-size: 14px;
+        }
+        .docActions {
+            text-align: right;
+            min-width: 160px;
+            font-size: 13px;
+        }
+        .btnSmall {
+            padding: 6px 8px;
+            margin-left: 8px;
             border-radius: 6px;
-            max-height: 400px;
+            border: none;
+            cursor: pointer;
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+        .btnDanger {
+            background: #ff4d4f;
+            color: white;
+        }
+        #log {
+            margin-top: 12px;
+            background: #f9fafc;
+            border: 1px solid #eef2ff;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #333;
+            white-space: pre-wrap;
+            max-height: 120px;
             overflow-y: auto;
         }
-        .item {
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .item:last-child {
-            border-bottom: none;
-        }
-        #msg {
-            margin-top: 15px;
-            font-weight: bold;
+        .hint {
+            font-size: 12px;
+            color: #55607a;
+            margin-top: 8px;
         }
     </style>
 </head>
 <body>
+    <div class="card" role="main">
+        <h1 class="title">Documentación de Conductores</h1>
 
-    <div id="left">
-        <h2>Documentos guardados</h2>
-        <div id="list"></div>
-    </div>
+        <div class="layout">
+            <div id="leftPanel" class="panel">
+                <div class="sectionTitle">Documentos almacenados</div>
+                <div id="storedDocs"></div>
+            </div>
 
-    <div id="right">
-        <h2>Gestión de documentos</h2>
+            <div id="rightPanel" class="panel">
+                <div class="sectionTitle">Agregar / Actualizar</div>
 
-        <div class="inputBox">
-            <label>Usuario</label>
-            <select id="userSelect"></select>
+                <label>Seleccionar usuario</label>
+                <select id="userSelect"></select>
+
+                <label>Nombre del documento</label>
+                <input type="text" id="docName" placeholder="Ej: Licencia conducir">
+
+                <label>Fecha de vencimiento</label>
+                <input type="date" id="docDate">
+
+                <button id="btnSave">Guardar documento</button>
+
+                <div class="sectionTitle" style="margin-top:18px">Carga masiva (CSV)</div>
+                <div class="hint">Formato CSV: userId,documentName,yyyy-mm-dd</div>
+                <input type="file" id="bulkFile" accept=".csv">
+                <button id="btnBulk">Procesar CSV</button>
+
+                <div id="log"></div>
+            </div>
         </div>
-
-        <div class="inputBox">
-            <label>Nombre del documento</label>
-            <input id="docName" type="text">
-        </div>
-
-        <div class="inputBox">
-            <label>Fecha de vencimiento</label>
-            <input id="docDate" type="date">
-        </div>
-
-        <button id="btnSave">Guardar</button>
-
-        <div id="msg"></div>
     </div>
 
     <script>
-        var api;
-        var users = [];
+        (function() {
+            var api = null;
+            var state = null;
+            var addInIdForUserPrefix = "DOC_";
 
-        function loadUsers() {
-            api.call("Get", { typeName: "User" }, function(r) {
-                users = r;
-                var sel = document.getElementById("userSelect");
-                sel.innerHTML = "";
-                r.forEach(function(u) {
-                    var opt = document.createElement("option");
-                    opt.value = u.id;
-                    opt.textContent = u.name;
-                    sel.appendChild(opt);
-                });
-                loadDocuments();
-            });
-        }
-
-        function loadDocuments() {
-            var userId = document.getElementById("userSelect").value;
-            var addInId = "DOC_" + userId;
-
-            api.call("Get", {
-                typeName: "AddInData",
-                search: { addInId: addInId }
-            }, function(r) {
-                var list = document.getElementById("list");
-                list.innerHTML = "";
-                if (r.length === 0) return;
-
-                var docs = r[0].details && r[0].details.documents ? r[0].details.documents : [];
-
-                docs.forEach(function(d) {
-                    var div = document.createElement("div");
-                    div.className = "item";
-                    div.textContent = d.nombre + " | vence: " + d.vence;
-                    list.appendChild(div);
-                });
-            });
-        }
-
-        function loadExisting(addInId, callback) {
-            api.call("Get", {
-                typeName: "AddInData",
-                search: { addInId: addInId }
-            }, function(result) {
-                if (result && result.length > 0) callback(result[0]);
-                else callback(null);
-            }, function() { callback(null); });
-        }
-
-        function saveDocument() {
-            var userId = document.getElementById("userSelect").value;
-            var name = document.getElementById("docName").value;
-            var vence = document.getElementById("docDate").value;
-
-            if (!name || !vence) {
-                document.getElementById("msg").innerText = "Falta completar datos";
-                return;
+            function log(msg) {
+                var l = document.getElementById("log");
+                l.textContent += msg + "\\n";
+                l.scrollTop = l.scrollHeight;
             }
 
-            var addInId = "DOC_" + userId;
+            function loadUsers(callback) {
+                api.call("Get", { typeName: "User" }, function(result) {
+                    var sel = document.getElementById("userSelect");
+                    sel.innerHTML = "";
+                    for (var i = 0; i < result.length; i++) {
+                        var u = result[i];
+                        var opt = document.createElement("option");
+                        opt.value = u.id;
+                        opt.textContent = u.name || ((u.firstName || "") + " " + (u.lastName || "")).trim() || u.id;
+                        sel.appendChild(opt);
+                    }
+                    if (typeof callback === "function") callback();
+                }, function(err) {
+                    log("Error cargando usuarios: " + JSON.stringify(err));
+                    if (typeof callback === "function") callback();
+                });
+            }
 
-            loadExisting(addInId, function(existing) {
-                if (existing) {
-                    if (!existing.details) existing.details = {};
-                    if (!existing.details.documents) existing.details.documents = [];
-                    existing.details.documents.push({
-                        nombre: name,
-                        vence: vence
-                    });
-
-                    api.call("Set", {
-                        typeName: "AddInData",
-                        entity: existing
-                    }, function() {
-                        document.getElementById("msg").innerText = "Actualizado";
-                        loadDocuments();
-                    }, function(e) {
-                        document.getElementById("msg").innerText = "Error: " + JSON.stringify(e);
-                    });
-
-                } else {
-                    var entity = {
-                        addInId: addInId,
-                        details: {
-                            userId: userId,
-                            documents: [
-                                { nombre: name, vence: vence }
-                            ]
+            function loadAllAddInData(callback) {
+                api.call("Get", { typeName: "AddInData" }, function(result) {
+                    var store = {};
+                    for (var i = 0; i < result.length; i++) {
+                        var row = result[i];
+                        var rowAddInId = row.addInId || (row.entity && row.entity.addInId) || null;
+                        if (!rowAddInId || rowAddInId.indexOf(addInIdForUserPrefix) !== 0) continue;
+                        var userId = rowAddInId.substring(addInIdForUserPrefix.length);
+                        var details = row.details || {};
+                        var docs = details.documents || [];
+                        store[userId] = store[userId] || { entries: [], docs: [] };
+                        store[userId].entries.push(row);
+                        for (var j = 0; j < docs.length; j++) {
+                            store[userId].docs.push({
+                                sourceId: row.id,
+                                nombre: docs[j].nombre,
+                                vence: docs[j].vence
+                            });
                         }
-                    };
+                    }
+                    renderStoredDocs(store);
+                    if (typeof callback === "function") callback(store);
+                }, function(err) {
+                    log("Error leyendo AddInData: " + JSON.stringify(err));
+                    renderStoredDocs({});
+                    if (typeof callback === "function") callback({});
+                });
+            }
 
-                    api.call("Add", {
-                        typeName: "AddInData",
-                        entity: entity
-                    }, function() {
-                        document.getElementById("msg").innerText = "Guardado";
-                        loadDocuments();
-                    }, function(e) {
-                        document.getElementById("msg").innerText = "Error: " + JSON.stringify(e);
-                    });
+            function renderStoredDocs(store) {
+                var box = document.getElementById("storedDocs");
+                box.innerHTML = "";
+                var userIds = Object.keys(store).sort();
+                if (userIds.length === 0) {
+                    var no = document.createElement("div");
+                    no.className = "hint";
+                    no.textContent = "No hay documentos almacenados.";
+                    box.appendChild(no);
+                    return;
                 }
-            });
-        }
+                for (var i = 0; i < userIds.length; i++) {
+                    var uid = userIds[i];
+                    var group = document.createElement("div");
+                    group.className = "docGroup";
+                    var header = document.createElement("div");
+                    header.className = "docGroupHeader";
+                    var title = document.createElement("div");
+                    title.className = "docUser";
+                    title.textContent = uid;
+                    var count = document.createElement("div");
+                    count.className = "small";
+                    count.textContent = store[uid].docs.length + " documento(s)";
+                    header.appendChild(title);
+                    header.appendChild(count);
+                    group.appendChild(header);
+                    var list = document.createElement("div");
+                    list.className = "docList";
+                    for (var j = 0; j < store[uid].docs.length; j++) {
+                        (function(doc){
+                            var item = document.createElement("div");
+                            item.className = "docItem";
+                            var meta = document.createElement("div");
+                            meta.className = "docMeta";
+                            meta.textContent = doc.nombre + " (vence: " + doc.vence + ")";
+                            var actions = document.createElement("div");
+                            actions.className = "docActions";
+                            var btnDelete = document.createElement("button");
+                            btnDelete.className = "btnSmall btnDanger";
+                            btnDelete.textContent = "Eliminar";
+                            btnDelete.onclick = function() {
+                                deleteDocument(uid, doc, function(ok) {
+                                    if (ok) {
+                                        log("Documento eliminado: " + doc.nombre + " / " + uid);
+                                        loadAllAddInData();
+                                    } else {
+                                        log("Error eliminando documento");
+                                    }
+                                });
+                            };
+                            actions.appendChild(btnDelete);
+                            item.appendChild(meta);
+                            item.appendChild(actions);
+                            list.appendChild(item);
+                        })(store[uid].docs[j]);
+                    }
+                    group.appendChild(list);
+                    box.appendChild(group);
+                }
+            }
 
-        document.getElementById("btnSave").addEventListener("click", saveDocument);
+            function loadExistingForUser(userId, cb) {
+                var addInId = addInIdForUserPrefix + userId;
+                api.call("Get", { typeName: "AddInData", search: { addInId: addInId } }, function(res) {
+                    if (res && res.length > 0) cb(res[0]);
+                    else cb(null);
+                }, function() { cb(null); });
+            }
 
-        document.getElementById("userSelect").addEventListener("change", loadDocuments);
+            function saveDocument() {
+                var userId = document.getElementById("userSelect").value;
+                var nombre = document.getElementById("docName").value.trim();
+                var vence = document.getElementById("docDate").value;
+                if (!userId || !nombre || !vence) {
+                    log("Faltan datos para guardar");
+                    return;
+                }
+                var addInId = addInIdForUserPrefix + userId;
+                loadExistingForUser(userId, function(existing) {
+                    if (existing) {
+                        if (!existing.details) existing.details = {};
+                        if (!existing.details.documents) existing.details.documents = [];
+                        existing.details.documents.push({ nombre: nombre, vence: vence });
+                        api.call("Set", { typeName: "AddInData", entity: existing }, function() {
+                            log("Documento agregado (Set) para " + userId);
+                            loadAllAddInData();
+                            clearForm();
+                        }, function(err) {
+                            log("Error Set: " + JSON.stringify(err));
+                        });
+                    } else {
+                        var entity = { addInId: addInId, details: { userId: userId, documents: [{ nombre: nombre, vence: vence }] } };
+                        api.call("Add", { typeName: "AddInData", entity: entity }, function() {
+                            log("Documento guardado (Add) para " + userId);
+                            loadAllAddInData();
+                            clearForm();
+                        }, function(err) {
+                            log("Error Add: " + JSON.stringify(err));
+                        });
+                    }
+                });
+            }
 
-        geotab.addin.documentos = function(apiRef, state) {
-            api = apiRef;
-            return {
-                initialize: function(apiRef, state) {
-                    loadUsers();
-                },
-                draw: function(apiRef, state) {}
+            function deleteDocument(userId, doc, cb) {
+                loadExistingForUser(userId, function(existing) {
+                    if (!existing || !existing.details || !Array.isArray(existing.details.documents)) { cb(false); return; }
+                    var arr = existing.details.documents;
+                    var idx = -1;
+                    for (var i = 0; i < arr.length; i++) {
+                        if (arr[i].nombre === doc.nombre && arr[i].vence === doc.vence) { idx = i; break; }
+                    }
+                    if (idx === -1) { cb(false); return; }
+                    arr.splice(idx, 1);
+                    if (arr.length === 0) {
+                        api.call("Remove", { typeName: "AddInData", id: existing.id }, function() { cb(true); }, function() { cb(false); });
+                    } else {
+                        existing.details.documents = arr;
+                        api.call("Set", { typeName: "AddInData", entity: existing }, function() { cb(true); }, function() { cb(false); });
+                    }
+                });
+            }
+
+            function processCSV(file) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var text = e.target.result;
+                    var lines = text.split(/\\r\\n|\\n/);
+                    var chain = Promise.resolve();
+                    var processed = 0;
+                    var errors = 0;
+                    for (var i = 0; i < lines.length; i++) {
+                        (function(line) {
+                            chain = chain.then(function() {
+                                return new Promise(function(res) {
+                                    var trimmed = line.trim();
+                                    if (!trimmed) { res(); return; }
+                                    var cols = parseCSVLine(trimmed);
+                                    if (cols.length < 3) { errors++; res(); return; }
+                                    var userId = cols[0].trim();
+                                    var nombre = cols[1].trim();
+                                    var vence = cols[2].trim();
+                                    if (!userId || !nombre || !vence) { errors++; res(); return; }
+                                    loadExistingForUser(userId, function(existing) {
+                                        if (existing) {
+                                            if (!existing.details) existing.details = {};
+                                            if (!existing.details.documents) existing.details.documents = [];
+                                            existing.details.documents.push({ nombre: nombre, vence: vence });
+                                            api.call("Set", { typeName: "AddInData", entity: existing }, function() { processed++; res(); }, function() { errors++; res(); });
+                                        } else {
+                                            var entity = { addInId: addInIdForUserPrefix + userId, details: { userId: userId, documents: [{ nombre: nombre, vence: vence }] } };
+                                            api.call("Add", { typeName: "AddInData", entity: entity }, function() { processed++; res(); }, function() { errors++; res(); });
+                                        }
+                                    });
+                                });
+                            });
+                        })(lines[i]);
+                    }
+                    chain.then(function() {
+                        log("CSV procesado. Registros: " + processed + ", Errores: " + errors);
+                        loadAllAddInData();
+                    });
+                };
+                reader.readAsText(file, "UTF-8");
+            }
+
+            function parseCSVLine(line) {
+                var res = [];
+                var cur = "";
+                var inQuotes = false;
+                for (var i = 0; i < line.length; i++) {
+                    var ch = line[i];
+                    if (ch === '"') {
+                        if (inQuotes && i + 1 < line.length && line[i + 1] === '"') { cur += '"'; i++; }
+                        else { inQuotes = !inQuotes; }
+                    } else if (ch === ',' && !inQuotes) {
+                        res.push(cur);
+                        cur = "";
+                    } else { cur += ch; }
+                }
+                res.push(cur);
+                return res;
+            }
+
+            function clearForm() {
+                document.getElementById("docName").value = "";
+                document.getElementById("docDate").value = "";
+            }
+
+            window.geotab.addin.Doc_Conductores = function(api_, state_) {
+                api = api_;
+                state = state_;
+                return {
+                    initialize: function(apiInner, stateInner, callback) {
+                        loadUsers(function() {
+                            loadAllAddInData(function() {
+                                document.getElementById("btnSave").addEventListener("click", saveDocument);
+                                document.getElementById("btnBulk").addEventListener("click", function() {
+                                    var f = document.getElementById("bulkFile").files[0];
+                                    if (!f) { log("Seleccione un CSV"); return; }
+                                    processCSV(f);
+                                });
+                                document.getElementById("userSelect").addEventListener("change", function() {
+                                    var selected = this.value;
+                                    var name = this.options[this.selectedIndex] && this.options[this.selectedIndex].text;
+                                    log("Usuario seleccionado: " + (name || selected));
+                                });
+                                callback();
+                            });
+                        });
+                    },
+                    focus: function(apiInner, stateInner) {},
+                    blur: function() {}
+                };
             };
-        };
+        })();
     </script>
-
 </body>
 </html>
