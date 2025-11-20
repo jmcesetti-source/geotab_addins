@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Documentación de Conductores</title>
     <style>
         body {
@@ -75,6 +75,10 @@
             font-size: 12px;
             color: #555;
         }
+        .actionBtn {
+            padding: 6px 8px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -82,37 +86,48 @@
         <h2>Documentación almacenada</h2>
         <div id="storedDocs"></div>
     </div>
+
     <div id="rightPanel">
         <h2>Cargar documentación</h2>
+
         <div class="inputRow">
             <label>Conductor</label>
             <select id="userSelect"></select>
         </div>
+
         <div class="inputRow">
             <label>Documento</label>
             <input type="text" id="docName" />
         </div>
+
         <div class="inputRow">
             <label>Fecha de vencimiento</label>
             <input type="date" id="docDate" />
         </div>
-        <button id="saveDoc">Guardar</button>
+
+        <button id="saveDoc" class="actionBtn">Guardar</button>
+
         <h3 style="margin-top:18px">Carga masiva (CSV)</h3>
         <div class="small">Formato CSV: userId,documentName,yyyy-mm-dd</div>
         <input type="file" id="bulkFile" accept=".csv" />
-        <button id="uploadBulk">Procesar CSV</button>
+        <button id="uploadBulk" class="actionBtn">Procesar CSV</button>
+
         <div id="log"></div>
     </div>
- <script>
+
+    <script>
         var api = null;
         var state = null;
+        var addInId = null;
         var dataPrefix = "docs_";
+
         function log(msg) {
             var b = document.getElementById("log");
             b.textContent += msg + "\n";
             b.scrollTop = b.scrollHeight;
         }
-        function loadUsers() {
+
+        function loadUsers(callback) {
             api.call("Get", { typeName: "User" }, function(result) {
                 var sel = document.getElementById("userSelect");
                 sel.innerHTML = "";
@@ -120,29 +135,32 @@
                     var u = result[i];
                     var opt = document.createElement("option");
                     opt.value = u.id;
-                    opt.textContent = u.name || (u.firstName || "") + " " + (u.lastName || "");
+                    opt.textContent = u.name || ((u.firstName || "") + " " + (u.lastName || "")).trim();
                     sel.appendChild(opt);
                 }
+                if (typeof callback === "function") callback();
             }, function(err) {
                 log("Error cargando usuarios: " + JSON.stringify(err));
+                if (typeof callback === "function") callback();
             });
         }
+
         function loadAllDocuments(callback) {
-            api.call("GetAddInData", {}, function(result) {
+            api.call("Get", { typeName: "AddInData", search: { addInId: addInId } }, function(result) {
                 var all = {};
                 for (var i = 0; i < result.length; i++) {
                     var row = result[i];
-                    if (!row.key || row.key.indexOf(dataPrefix) !== 0) continue;
-                    var userId = row.key.substring(dataPrefix.length);
-                    try {
-                        var parsed = JSON.parse(row.value);
-                        if (parsed && Array.isArray(parsed.documentos)) {
-                            all[userId] = parsed.documentos;
-                        } else {
-                            all[userId] = [];
+                    var details = row.details || {};
+                    if (details.userId && Array.isArray(details.documents)) {
+                        all[details.userId] = all[details.userId] || [];
+                        for (var j = 0; j < details.documents.length; j++) {
+                            var d = details.documents[j];
+                            all[details.userId].push({
+                                id: row.id,
+                                nombre: d.nombre,
+                                vence: d.vence
+                            });
                         }
-                    } catch (e) {
-                        all[userId] = [];
                     }
                 }
                 renderStoredDocs(all);
@@ -153,6 +171,7 @@
                 if (typeof callback === "function") callback({});
             });
         }
+
         function renderStoredDocs(store) {
             var box = document.getElementById("storedDocs");
             box.innerHTML = "";
@@ -172,53 +191,53 @@
                 title.className = "groupTitle";
                 title.textContent = uid;
                 box.appendChild(title);
-                docs.forEach(function(doc) {
-                    var item = document.createElement("div");
-                    var exp = new Date(doc.vence);
-                    var diff = (exp - now) / (1000 * 60 * 60 * 24);
-                    if (isNaN(exp.getTime())) diff = 99999;
-                    if (diff < 0) item.className = "docItem expired";
-                    else if (diff <= 7) item.className = "docItem soon";
-                    else item.className = "docItem";
-                    var left = document.createElement("div");
-                    left.className = "left";
-                    left.textContent = doc.nombre + " ";
-                    var small = document.createElement("span");
-                    small.className = "small";
-                    small.textContent = "(" + (doc.vence || "") + ")";
-                    left.appendChild(small);
-                    var right = document.createElement("div");
-                    right.className = "right";
-                    var btnDel = document.createElement("button");
-                    btnDel.textContent = "Eliminar";
-                    btnDel.style.marginLeft = "8px";
-                    (function(userIdCopy, docCopy, itemEl){
+                for (var k = 0; k < docs.length; k++) {
+                    (function(doc){
+                        var item = document.createElement("div");
+                        var exp = new Date(doc.vence);
+                        var diff = (exp - now) / (1000 * 60 * 60 * 24);
+                        if (isNaN(exp.getTime())) diff = 99999;
+                        if (diff < 0) item.className = "docItem expired";
+                        else if (diff <= 7) item.className = "docItem soon";
+                        else item.className = "docItem";
+                        var left = document.createElement("div");
+                        left.className = "left";
+                        left.textContent = doc.nombre + " ";
+                        var small = document.createElement("span");
+                        small.className = "small";
+                        small.textContent = "(" + (doc.vence || "") + ")";
+                        left.appendChild(small);
+                        var right = document.createElement("div");
+                        right.className = "right";
+                        var btnDel = document.createElement("button");
+                        btnDel.className = "actionBtn";
+                        btnDel.textContent = "Eliminar";
                         btnDel.onclick = function() {
-                            deleteDocumentForUser(userIdCopy, docCopy, function(ok){
+                            removeAddInDataEntry(doc.id, function(ok) {
                                 if (ok) {
-                                    itemEl.parentNode.removeChild(itemEl);
-                                    log("Documento eliminado");
+                                    log("Entrada eliminada");
                                     loadAllDocuments();
                                 } else {
-                                    log("Error al eliminar documento");
+                                    log("Error eliminando entrada");
                                 }
                             });
                         };
-                    })(uid, doc, item);
-                    right.textContent = humanizeDiff(diff);
-                    right.appendChild(btnDel);
-                    item.appendChild(left);
-                    item.appendChild(right);
-                    box.appendChild(item);
-                });
+                        right.textContent = humanizeDiff(diff);
+                        right.appendChild(btnDel);
+                        item.appendChild(left);
+                        item.appendChild(right);
+                        box.appendChild(item);
+                    })(docs[k]);
+                }
             }
         }
+
         function humanizeDiff(days) {
             if (days === 99999) return "Fecha inválida";
             if (days < 0) return "Vencido";
-            if (days <= 7) return "Vence en " + Math.ceil(days) + " días";
             return "Vence en " + Math.ceil(days) + " días";
         }
+
         function saveDocument() {
             var userId = document.getElementById("userSelect").value;
             var nombre = document.getElementById("docName").value.trim();
@@ -227,75 +246,29 @@
                 log("Faltan datos para guardar");
                 return;
             }
-            var key = dataPrefix + userId;
-            api.call("GetAddInData", { key: key }, function(res) {
-                var docs = { documentos: [] };
-                if (res && res.value) {
-                    try {
-                        docs = JSON.parse(res.value);
-                        if (!docs.documentos) docs.documentos = [];
-                    } catch (e) {
-                        docs = { documentos: [] };
-                    }
-                }
-                docs.documentos.push({ nombre: nombre, vence: vence });
-                api.call("SetAddInData", { key: key, value: JSON.stringify(docs) }, function() {
-                    log("Documento guardado");
-                    loadAllDocuments();
-                    clearForm();
-                }, function(err) {
-                    log("Error guardando: " + JSON.stringify(err));
-                });
-            }, function() {
-                var docs = { documentos: [{ nombre: nombre, vence: vence }] };
-                api.call("SetAddInData", { key: key, value: JSON.stringify(docs) }, function() {
-                    log("Documento guardado (nuevo key)");
-                    loadAllDocuments();
-                    clearForm();
-                }, function(err) {
-                    log("Error guardando: " + JSON.stringify(err));
-                });
+            var details = {
+                userId: userId,
+                documents: [
+                    { nombre: nombre, vence: vence }
+                ]
+            };
+            api.call("Add", { typeName: "AddInData", entity: { addInId: addInId, details: details } }, function(res) {
+                log("Documento guardado");
+                loadAllDocuments();
+                clearForm();
+            }, function(err) {
+                log("Error guardando AddInData: " + JSON.stringify(err));
             });
         }
-        function deleteDocumentForUser(userId, docToDelete, callback) {
-            var key = dataPrefix + userId;
-            api.call("GetAddInData", { key: key }, function(res) {
-                if (!res || !res.value) {
-                    callback(false);
-                    return;
-                }
-                try {
-                    var parsed = JSON.parse(res.value);
-                    var arr = parsed.documentos || [];
-                    var idx = -1;
-                    for (var i = 0; i < arr.length; i++) {
-                        if (arr[i].nombre === docToDelete.nombre && arr[i].vence === docToDelete.vence) {
-                            idx = i;
-                            break;
-                        }
-                    }
-                    if (idx === -1) {
-                        callback(false);
-                        return;
-                    }
-                    arr.splice(idx, 1);
-                    parsed.documentos = arr;
-                    api.call("SetAddInData", { key: key, value: JSON.stringify(parsed) }, function() {
-                        callback(true);
-                    }, function() {
-                        callback(false);
-                    });
-                } catch (e) {
-                    callback(false);
-                }
+
+        function removeAddInDataEntry(addInDataId, callback) {
+            api.call("Remove", { typeName: "AddInData", id: addInDataId }, function() {
+                callback(true);
             }, function() {
                 callback(false);
             });
         }
-        function clearForm() {
-            document.getElementById("docName").value = "";
-            document.getElementById("docDate").value = "";
-        }
+
         function processCSVFile(file) {
             var reader = new FileReader();
             reader.onload = function(e) {
@@ -316,34 +289,13 @@
                                 var nombre = cols[1].trim();
                                 var vence = cols[2].trim();
                                 if (!userId || !nombre || !vence) { errors++; res(); return; }
-                                var key = dataPrefix + userId;
-                                api.call("GetAddInData", { key: key }, function(resGet) {
-                                    var docs = { documentos: [] };
-                                    if (resGet && resGet.value) {
-                                        try {
-                                            docs = JSON.parse(resGet.value);
-                                            if (!docs.documentos) docs.documentos = [];
-                                        } catch (e) {
-                                            docs = { documentos: [] };
-                                        }
-                                    }
-                                    docs.documentos.push({ nombre: nombre, vence: vence });
-                                    api.call("SetAddInData", { key: key, value: JSON.stringify(docs) }, function() {
-                                        processed++;
-                                        res();
-                                    }, function() {
-                                        errors++;
-                                        res();
-                                    });
+                                var details = { userId: userId, documents: [{ nombre: nombre, vence: vence }] };
+                                api.call("Add", { typeName: "AddInData", entity: { addInId: addInId, details: details } }, function() {
+                                    processed++;
+                                    res();
                                 }, function() {
-                                    var docs = { documentos: [{ nombre: nombre, vence: vence }] };
-                                    api.call("SetAddInData", { key: key, value: JSON.stringify(docs) }, function() {
-                                        processed++;
-                                        res();
-                                    }, function() {
-                                        errors++;
-                                        res();
-                                    });
+                                    errors++;
+                                    res();
                                 });
                             });
                         });
@@ -356,6 +308,7 @@
             };
             reader.readAsText(file, "UTF-8");
         }
+
         function parseCSVLine(line) {
             var res = [];
             var curr = "";
@@ -379,19 +332,37 @@
             res.push(curr);
             return res;
         }
-        document.getElementById("saveDoc").onclick = saveDocument;
-        document.getElementById("uploadBulk").onclick = function() {
-            var f = document.getElementById("bulkFile").files[0];
-            if (!f) { log("Seleccione un archivo CSV"); return; }
-            processCSVFile(f);
-        };
-        geotab.addin.driverDocs = function(api_, state_) {
+
+        function clearForm() {
+            document.getElementById("docName").value = "";
+            document.getElementById("docDate").value = "";
+        }
+
+        function removeAddInDataByIdIfExists(id, callback) {
+            api.call("Remove", { typeName: "AddInData", id: id }, function() {
+                callback(true);
+            }, function() {
+                callback(false);
+            });
+        }
+
+        window.geotab.addin.driverDocs = function(api_, state_) {
             api = api_;
             state = state_;
+            addInId = state.addInId || null;
             return {
                 initialize: function(apiInner, stateInner, callback) {
-                    loadUsers();
-                    loadAllDocuments(function(){ callback(); });
+                    loadUsers(function() {
+                        loadAllDocuments(function() {
+                            document.getElementById("saveDoc").onclick = saveDocument;
+                            document.getElementById("uploadBulk").onclick = function() {
+                                var f = document.getElementById("bulkFile").files[0];
+                                if (!f) { log("Seleccione un archivo CSV"); return; }
+                                processCSVFile(f);
+                            };
+                            callback();
+                        });
+                    });
                 },
                 focus: function(apiInner, stateInner) {},
                 blur: function() {}
@@ -400,5 +371,3 @@
     </script>
 </body>
 </html>
-
-
